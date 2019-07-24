@@ -1,0 +1,28 @@
+$flutter_path = '../addflutter/'
+
+def flutter_pods
+  flutter_application_path = $flutter_path
+  eval(File.read(File.join(flutter_application_path, '.ios', 'Flutter', 'podhelper.rb')), binding)
+end
+
+target 'addFlutter' do
+  use_frameworks!
+
+  pod 'AFNetworking', '~> 3.0'
+
+  flutter_pods
+end
+
+post_install do |installer|
+  framework_dir = File.join($flutter_path, '.ios', 'Flutter')
+  update_configs(installer, framework_dir)
+
+  installer.pods_project.targets.each do |target|
+    puts "#{target.name}"
+  end
+  
+  installer.pods_project.build_configurations.each do |config|
+      config.build_settings.delete('CODE_SIGNING_ALLOWED')
+      config.build_settings.delete('CODE_SIGNING_REQUIRED')
+  end
+end
