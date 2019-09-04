@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import io.flutter.facade.Flutter;
 import sample.rws.com.addflutter.R;
 
 /**
@@ -31,7 +30,8 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         // getItem is called to instantiate the fragment for the given page.
         // Return a PlaceholderFragment (defined as a static inner class below).
         if (position != 0){
-            return Flutter.createFragment("route1");
+//            return Flutter.createFragment("route1");
+            return TestFlutterFragment.newInstance();
         }
 
         return PlaceholderFragment.newInstance(position + 1);

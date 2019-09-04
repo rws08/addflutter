@@ -1,4 +1,10 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() => runApp(MyApp());
 
@@ -43,9 +49,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  var _result = "";
+  static const methodChannel = const MethodChannel('add_flutter');
+  Future<Null> _getInvokeResult() async {
+    try {
+      _result = await methodChannel
+          .invokeMethod('test', {'name': 'I am not an old pig.', 'gender': 1});
+    } on PlatformException catch (e) {
+      _result = "Failed: '${e.message}'.";
+    }
+    setState(() {});
+  }
+
   int _counter = 0;
 
-  void _incrementCounter() {
+  void _incrementCounter() async {
+    var path = await getTemporaryDirectory();
+    print(path);
+
+    if (_counter == 1) {
+      // getImage();
+    }
+
+    _getInvokeResult();
+
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -53,6 +80,16 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  File _image;
+
+  Future getImage() async {
+    var image = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    setState(() {
+      _image = image;
     });
   }
 
@@ -66,24 +103,47 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Center(
+          child: Text(widget.title),
+        ),
       ),
       body: SafeArea(
         left: true,
         right: true,
         top: true,
         bottom: true,
-        minimum: EdgeInsets.fromLTRB(0, 0, 0, 49),
+        minimum: Theme.of(context).platform == TargetPlatform.iOS
+            ? EdgeInsets.fromLTRB(0, 0, 0, 49)
+            : EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: Align(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: ListView(
             children: <Widget>[
-              Text(
-                'You have pushed the button this many times:',
-              ),
-              Text(
-                '$_counter',
-                style: Theme.of(context).textTheme.display1,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'You have pushed the button this many times:',
+                  ),
+                  Text(
+                    '$_counter $_result',
+                    style: Theme.of(context).textTheme.display1,
+                  ),
+                  Center(
+                    child: _image == null
+                        ? SizedBox(
+                            width: 142.0,
+                            height: 542.0,
+                            child: const DecoratedBox(
+                              decoration:
+                                  const BoxDecoration(color: Colors.red),
+                            ),
+                          )
+                        : Image.file(
+                            _image,
+                            fit: BoxFit.fitHeight,
+                          ),
+                  ),
+                ],
               ),
             ],
           ),
